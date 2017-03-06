@@ -46,6 +46,10 @@ run "bundle install"
 
 # ----- Setup RSpec + testing libraries files -----------------------------------------------------
 
+puts
+say_status  'Rubygems', 'RSpec install...', :yellow
+puts        '-'*80, ''
+
 generate 'rspec:install'
 
 inject_into_file 'spec/rails_helper.rb',
@@ -90,3 +94,66 @@ SHOULDA_MATCHERS
 
 git add:    "."
 git commit: "-m 'RSpec + Capybara + FactorGirl + Shoulda-Matchers setup'"
+
+# ----- Install Haml (optional) -------------------------------------------------------------------
+
+puts
+say_status  'Rubygems', 'Haml install... (optional)', :yellow
+puts        '-'*80, ''
+
+if yes?('Would you like to install Haml?')
+  gem 'haml'
+  gem 'haml-rails'
+
+  generate 'haml:application_layout convert'
+
+  remove_file 'app/views/layouts/application.html.erb'
+
+  git add:    "."
+  git commit: "-m 'Added Haml'"
+end
+
+# ----- Install Bootstrap (optional) --------------------------------------------------------------
+
+puts
+say_status  'Rubygems', 'Bootstrap install... (optional)', :yellow
+puts        '-'*80, ''
+
+if yes?('Would you like to install Bootstrap?')
+  gem 'bootstrap-sass'
+
+  remove_file 'app/assets/stylesheets/application.css'
+
+  create_file 'app/assets/stylesheets/application.scss', <<-SCSS
+  @import "bootstrap-sprockets";
+  @import "bootstrap";
+
+  SCSS
+
+  inject_into_file 'app/assets/javascripts/application.js',
+                   "\n//= require bootstrap-sprockets",
+                   after: '//= require turbolinks'
+
+  git add:    "."
+  git commit: "-m 'Added Bootstrap'"
+end
+
+# ----- Install Devise (optional) -----------------------------------------------------------------
+
+puts
+say_status  'Rubygems', 'Devise install... (optional)', :yellow
+puts        '-'*80, ''
+
+if yes?('Would you like to install Devise?')
+  gem 'devise'
+  generate 'devise:install'
+
+	run 'bundle install'
+
+  model_name = ask('What would you like the user model to be called? [user]')
+  model_name = 'user' if model_name.blank?
+  generate 'devise', model_name
+
+  git add:    "."
+  git commit: "-m 'Added Devise for model #{model_name}'"
+end
