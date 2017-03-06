@@ -6,7 +6,7 @@
 # Usage:
 # ------
 #
-#     $ rails new nameapp -T -m tempalte.rb
+#     $ rails new appname -T -m https://raw.githubusercontent.com/VictorRO/rails-template/master/rspec.rb
 #
 # ==============================================================================
 
@@ -30,6 +30,7 @@ gem_group :test do
   gem 'capybara'
   gem 'launchy'
   gem 'database_cleaner'
+  gem 'shoulda-matchers'
 end
 
 git add:    "Gemfile*"
@@ -61,5 +62,31 @@ comment_lines 'spec/spec_helper.rb', /config\.profile_examples.*$/
 
 append_file '.rspec', '--format documentation'
 
+create_file 'spec/support/factory_girl.rb', <<-FACTORY_GIRL
+RSpec.configure do |config|
+  config.include FactoryGirl::Syntax::Methods
+
+  config.before(:suite) do
+    begin
+      DatabaseCleaner.start
+      FactoryGirl.lint
+    ensure
+      DatabaseCleaner.clean
+    end
+  end
+end
+
+FACTORY_GIRL
+
+create_file 'spec/support/shoulda_matchers.rb', <<-SHOULDA_MATCHERS
+Shoulda::Matchers.configure do |config|
+  config.integrate do |with|
+    with.test_framework :rspec
+    with.library :rails
+  end
+end
+
+SHOULDA_MATCHERS
+
 git add:    "."
-git commit: "-m 'RSpec + Capybara setup'"
+git commit: "-m 'RSpec + Capybara + FactorGirl + Shoulda-Matchers setup'"
